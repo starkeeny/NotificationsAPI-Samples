@@ -13,7 +13,7 @@
         }
 
         function simpleNotification() {
-            console.log('show message', Notification.maxActions);
+            console.log('show message', Notification.maxActions); // chrome show max 3 notifications at a time
 
             var n = undefined;
             // n = new Notification( // non persistent notification
@@ -106,6 +106,21 @@
                     // persistent notifications
                     navigator.serviceWorker.addEventListener('message', function (event) {
                         console.log('Received a message from service worker: ' + JSON.stringify(event.data));
+                        if (event.data.data === "notificationclose") {
+                            document.getElementsByTagName('div')[0].innerText = "Result: just close";
+                        } else if (event || event.data || event.data.data || event.data.data.action) {
+                            switch (event.data.data.action) {
+                                case 'fail':
+                                    document.getElementsByTagName('div')[0].innerText = "Result: bad";
+                                    break;
+                                case 'cool':
+                                    document.getElementsByTagName('div')[0].innerText = "Result: good";
+                                    break;
+                                default:
+                                    document.getElementsByTagName('div')[0].innerText = "Result: -";
+                                    break;
+                            }
+                        }
                     });
                 });
 
@@ -122,6 +137,7 @@
 </head>
 
 <body>
+    <div>Result: none</div>
     <button onclick="simpleNotification()">test</button>
 </body>
 

@@ -39,7 +39,6 @@
                         if (registrations[i].scope.toLowerCase().startsWith('https://starkeeny.github.io/NotificationsAPI-Samples/'.toLowerCase())) {
                             registeredServiceWorker = registrations[i];
                             console.log('registration found', registeredServiceWorker);
-                            manageUI();
                         }
                     }
                 })
@@ -48,15 +47,18 @@
                         navigator.serviceWorker.register('service-worker.js')
                             .then(function (registration) {
                                 registeredServiceWorker = registration;
-                                manageUI();
-                                registeredServiceWorker.addEventListener('message', function (event) {
-                                    console.log('Received a message from service worker: ' + JSON.stringify(event.data));
-                                });
+                                console.log('new registration performed', registeredServiceWorker);
                             })
                             .catch(function (err) {
                                 alert('ERROR: Unable to register service worker. "' + err + '"');
                             });
                     }
+                })
+                .then(value => {
+                    manageUI();
+                    registeredServiceWorker.addEventListener('message', function (event) {
+                        console.log('Received a message from service worker: ' + JSON.stringify(event.data));
+                    });
                 });
 
             if (Notification.permission !== 'denied' && Notification.permission !== 'granted') {

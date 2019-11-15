@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Notification Sample</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script>
+        var registeredServiceWorker = null;
+        var button;
+
+        function manageUI() {
+            button.disabled = Notification.permission === 'granted' && serviceWorker;
+        }
+
+        function simpleNotification() {
+            navigator.serviceWorker.showNotification('Arrrrrrrrrr', {
+                body: `Is this alrrrrrrrrright?`,
+                requireInteraction: true
+            });
+        }
+
+        window.addEventListener('load', function () {
+            button = document.getElementsByTagName('button')[0];
+            
+            if (!('serviceWorker' in navigator)) {
+                alert("This browser does not support service worker");
+                return
+            }
+            if (!("Notification" in window)) {
+                alert("This browser does not support desktop notification");
+                return;
+            }
+
+            manageUI();
+
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                if (registrations.length == 1) {
+                    registeredServiceWorker = registrations[0];
+                }
+                console.log(registrations);
+            });
+
+            navigator.serviceWorker.register('service-worker.js')
+                .then(function (registration) {
+                    registeredServiceWorker = registration;
+                    manageUI();
+                    registeredServiceWorker.addEventListener('message', function (event) {
+                        console.log('Received a message from service worker: ' + JSON.stringify(event.data));
+                    });
+                })
+                .catch(function (err) {
+                    alert('ERROR: Unable to register service worker. "' + err + '"');
+                });
+
+
+            // Otherwise, we need to ask the user for permission
+            if (Notification.permission !== 'denied') {
+                Notification.requestPermission(function (permission) {
+                    // If the user accepts, let's create a notification
+                    manageUI();
+                });
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <button onclick="simpleNotification()">test</button>
+</body>
+
+</html>

@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="en">
-
 <head>
     <title>Notification Sample</title>
     <meta charset="utf-8">
@@ -64,8 +63,10 @@
             if (Notification.permission !== 'denied' && Notification.permission !== 'granted') {
                 Notification.requestPermission(function (permission) {
                     manageUI();
-                    console.log('permission requested. New permission outputted:', permission)
+                    console.log('notification permission requested. New permission outputted:', permission)
                 });
+            } else {
+                console.log('notification permission is:', Notification.permission);
             }
         });
     </script>

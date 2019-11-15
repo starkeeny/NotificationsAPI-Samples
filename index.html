@@ -23,7 +23,7 @@
 
         window.addEventListener('load', function () {
             button = document.getElementsByTagName('button')[0];
-            
+
             if (!('serviceWorker' in navigator)) {
                 alert("This browser does not support service worker");
                 return
@@ -36,30 +36,35 @@
             manageUI();
 
             navigator.serviceWorker.getRegistrations().then(registrations => {
-                if (registrations.length == 1) {
-                    registeredServiceWorker = registrations[0];
+                var i = 0;
+                for (i = 0; i < registrations.length; i++) {
+                    if (registrations[i].scope.toLowerCase().startsWith('https://starkeeny.github.io/NotificationsAPI-Samples/'.toLowerCase())) {
+                        registeredServiceWorker = registrations[i];
+                        console.log('registration found', registeredServiceWorker);
+                        manageUI();
+                    }
                 }
-                console.log(registrations);
             });
 
-            navigator.serviceWorker.register('service-worker.js')
-                .then(function (registration) {
-                    registeredServiceWorker = registration;
-                    manageUI();
-                    registeredServiceWorker.addEventListener('message', function (event) {
-                        console.log('Received a message from service worker: ' + JSON.stringify(event.data));
+            if (!registeredServiceWorker) {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(function (registration) {
+                        registeredServiceWorker = registration;
+                        manageUI();
+                        registeredServiceWorker.addEventListener('message', function (event) {
+                            console.log('Received a message from service worker: ' + JSON.stringify(event.data));
+                        });
+                    })
+                    .catch(function (err) {
+                        alert('ERROR: Unable to register service worker. "' + err + '"');
                     });
-                })
-                .catch(function (err) {
-                    alert('ERROR: Unable to register service worker. "' + err + '"');
-                });
-
+            }
 
             // Otherwise, we need to ask the user for permission
-            if (Notification.permission !== 'denied') {
+            if (Notification.permission !== 'denied' && Notification.permission !== 'granted') {
                 Notification.requestPermission(function (permission) {
-                    // If the user accepts, let's create a notification
                     manageUI();
+                    console.log('permission requested. New permission outputted:', permission)
                 });
             }
         });

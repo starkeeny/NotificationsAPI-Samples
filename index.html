@@ -55,7 +55,7 @@
                 })
                 .then(value => {
                     manageUI();
-                    registeredServiceWorker.addEventListener('message', function (event) {
+                    navigator.serviceWorker.addEventListener('message', function (event) {
                         console.log('Received a message from service worker: ' + JSON.stringify(event.data));
                     });
                 });

@@ -1,27 +1,73 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <title>Notification Sample</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <script>
         var registeredServiceWorker = null;
-        var button;
 
         function manageUI() {
-            button.disabled = !(Notification.permission === 'granted' && registeredServiceWorker);
+            document.getElementsByTagName('button')[0].disabled = !(Notification.permission === 'granted' && registeredServiceWorker);
         }
 
         function simpleNotification() {
-            registeredServiceWorker.showNotification('Arrrrrrrrrr', {
-                body: `Is this alrrrrrrrrright?`,
-                requireInteraction: true
-            });
+            console.log('show message', Notification.maxActions);
+
+            var n = undefined;
+            // n = new Notification( // non persistent notification
+            registeredServiceWorker.showNotification( // persistent notification
+                'devFest19 (' + new Date().toTimeString().substring(0, 8) + ')',  // Title 
+                {
+                    body: `Website Push Notifications - the Death of the Email-Newsletters?`, // like a short mail body
+
+                    badge: 'assets/java_512.png',       // displayed in android // https://www.iconfinder.com/icons/4519129/java_icon
+                    icon: 'assets/java_512.png',        // next to the text,
+                    image: 'assets/java_512_wide.png',  // big image above the content 
+
+                    tag: 'devFest19', // groups more notifications of one "source" (and overwrites old messages)
+                    renotify: true, // alarms when notification changes (even same tag and replacement)
+
+                    data: {
+                        // any object for later
+                    },
+
+                    requireInteraction: true, // stay open untill explicitly closed
+                    actions: [{ // only for persistent notification (== has service worker)
+                        action: 'cool',
+                        title: 'good stuff',
+                        icon: 'assets/ok.png', // https://www.iconfinder.com/icons/131848/accept_check_good_mark_ok_yes_icon
+                    }, {
+                        action: 'fail',
+                        title: 'meh',
+                        icon: 'assets/fail.png', // https://www.iconfinder.com/icons/339850/down_falling_stairs_icon
+                    }],
+
+                    silent: false, // controls if sound or vibration is enabled
+
+                    // sound: 'music.mp3', // not supported, but prepared in spec
+                    // vibrate: [200,100,200], // https://tests.peter.sh/notification-generator/
+
+                    dir: 'ltr', // direction: left to right
+                    lang: 'en-US',
+                    timestamp: Date.now(),
+
+                    a: 1
+                });
+
+            if (n) {
+                n.addEventListener('error', e => {
+                    console.error('error in notification', e);
+                });
+
+                n.addEventListener('click', e => {
+                    console.log('notification clicked', e);
+                });
+            }
         }
 
         window.addEventListener('load', function () {
-            button = document.getElementsByTagName('button')[0];
-
             if (!('serviceWorker' in navigator)) {
                 alert("This browser does not support service worker");
                 return
@@ -34,11 +80,10 @@
             navigator.serviceWorker.getRegistrations()
                 .then(registrations => {
                     var i = 0;
+                    // in our use-case it is always 1 entry...
                     for (i = 0; i < registrations.length; i++) {
-                        if (registrations[i].scope.toLowerCase().startsWith('https://starkeeny.github.io/NotificationsAPI-Samples/'.toLowerCase())) {
-                            registeredServiceWorker = registrations[i];
-                            console.log('registration found', registeredServiceWorker);
-                        }
+                        registeredServiceWorker = registrations[i];
+                        console.log('registration found', registrations.length);
                     }
                 })
                 .then(value => {
@@ -46,7 +91,8 @@
                         navigator.serviceWorker.register('service-worker.js')
                             .then(function (registration) {
                                 registeredServiceWorker = registration;
-                                console.log('new registration performed', registeredServiceWorker);
+                                manageUI();
+                                console.log('new registration performed');
                             })
                             .catch(function (err) {
                                 alert('ERROR: Unable to register service worker. "' + err + '"');
@@ -54,7 +100,10 @@
                     }
                 })
                 .then(value => {
-                    manageUI();
+                    console.log('ui configured and eventlistener is set'),
+                        manageUI();
+
+                    // persistent notifications
                     navigator.serviceWorker.addEventListener('message', function (event) {
                         console.log('Received a message from service worker: ' + JSON.stringify(event.data));
                     });

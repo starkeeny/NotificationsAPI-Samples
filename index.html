@@ -11,7 +11,7 @@
         var button;
 
         function manageUI() {
-            button.disabled = Notification.permission === 'granted' && registeredServiceWorker;
+            button.disabled = !(Notification.permission === 'granted' && registeredServiceWorker);
         }
 
         function simpleNotification() {
